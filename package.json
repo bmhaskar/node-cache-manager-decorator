@@ -1,0 +1,70 @@
+{
+  "name": "bcache",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Bharat Mhaskar",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "server": "node dist-server/app.js",
+    "clean": "rimraf dist-server",
+    "transpile": "babel server --out-dir ../dist-server --relative",
+    "build": "npm-run-all clean transpile",
+    "dev": "cross-env NODE_ENV=development npm-run-all build server",
+    "prod": "cross-env NODE_ENV=production npm-run-all build server",
+    "test": "jest",
+    "watch:dev": "nodemon"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.10",
+    "@babel/core": "^7.13.10",
+    "@babel/plugin-proposal-decorators": "^7.13.5",
+    "@babel/preset-env": "^7.13.10",
+    "cross-env": "^7.0.3",
+    "jest": "^26.6.3",
+    "nodemon": "^2.0.7",
+    "rimraf": "^3.0.2",
+    "yarn-run-all": "^3.1.1"
+  },
+  "babel": {
+    "plugins": [
+      [
+        "@babel/plugin-proposal-decorators",
+        {
+          "legacy": true
+        }
+      ]
+    ],
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": 14
+          }
+        }
+      ]
+    ]
+  },
+  "nodemonConfig": {
+    "exec": "yarn run dev",
+    "watch": [
+      "server/*"
+    ],
+    "ignore": [
+      "**/__tests__/**",
+      "*.test.js",
+      "*.spec.js"
+    ]
+  },
+  "dependencies": {
+    "cache-manager": "^3.4.1",
+    "cache-manager-ioredis": "^2.1.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "ioredis": "^4.24.0"
+  }
+}
