@@ -18,17 +18,14 @@ class UserRepository {
     console.log(cacheKey, user);
 
     if (!user) {
-      console.log("Fetching user from slow database");
       user = await this.model.get(id);
-
       await cache.set(cacheKey, user);
     }
     return user;
   }
   @Cacheble()
   async fetchUser(id) {
-    const user = await this.model.get(id);
-    return user;
+    return await this.model.get(id);
   }
 }
 

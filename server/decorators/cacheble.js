@@ -2,17 +2,24 @@ import cache from "../utils/cache";
 import Lock from "../utils/lock";
 
 const lock = new Lock();
-
-export const Cacheble = (keyFn, cacheManagerInstance = cache) => {
+export const defaultKeyFn = (name, args) => {
+  const defaultKey = [name];
+  if (Array.isArray(args) && args.length) {
+    defaultKey.push(args[0]);
+  }
+  return defaultKey;
+};
+export const Cacheble = (
+  config,
+  keyFn = defaultKeyFn,
+  cacheManagerInstance = cache
+) => {
   return (target, name, descriptor) => {
     const method = descriptor.value;
     descriptor.value = async function (...args) {
-      if (!keyFn) {
-        keyFn = (args) => [name, args[0]];
-      }
-      const key = stableValueHash(keyFn(args));
+      const key = stableValueHash(keyFn(name, args));
       const cachedResult = await cacheManagerInstance.get(key);
-      console.log("key", key, cachedResult);
+      //   console.log("key", key, cachedResult);
       if (cachedResult) {
         return cachedResult;
       }
@@ -21,7 +28,10 @@ export const Cacheble = (keyFn, cacheManagerInstance = cache) => {
       let result = null;
       try {
         result = await method.apply(this, args);
+        // console.log("Result", result);
         await cacheManagerInstance.set(key, result);
+      } catch (e) {
+        console.log(e);
       } finally {
         lock.release();
       }

@@ -1,7 +1,7 @@
 import cacheManager from "cache-manager";
 import redisStore from "cache-manager-ioredis";
 import { redisInstance } from "../adapters/redis";
-const memoryCache = cacheManager.caching({
+export const memoryCache = cacheManager.caching({
   store: "memory",
   max: 100,
   ttl: 1000 /*seconds*/,
@@ -9,7 +9,7 @@ const memoryCache = cacheManager.caching({
 
 // Documentation can be found at
 // https://github.com/dabroek/node-cache-manager-ioredis
-const redisCache = cacheManager.caching({
+export const redisCache = cacheManager.caching({
   store: redisStore,
   db: 0,
   ttl: 600,

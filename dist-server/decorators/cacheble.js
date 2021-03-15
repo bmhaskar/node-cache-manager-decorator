@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.stableValueHash = stableValueHash;
 exports.isPlainObject = isPlainObject;
-exports.Cacheble = void 0;
+exports.Cacheble = exports.defaultKeyFn = void 0;
 
 var _cache = _interopRequireDefault(require("../utils/cache"));
 
@@ -15,18 +15,25 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 const lock = new _lock.default();
 
-const Cacheble = (keyFn, cacheManagerInstance = _cache.default) => {
+const defaultKeyFn = (name, args) => {
+  const defaultKey = [name];
+
+  if (Array.isArray(args) && args.length) {
+    defaultKey.push(args[0]);
+  }
+
+  return defaultKey;
+};
+
+exports.defaultKeyFn = defaultKeyFn;
+
+const Cacheble = (config, keyFn = defaultKeyFn, cacheManagerInstance = _cache.default) => {
   return (target, name, descriptor) => {
     const method = descriptor.value;
 
     descriptor.value = async function (...args) {
-      if (!keyFn) {
-        keyFn = args => [name, args[0]];
-      }
-
-      const key = stableValueHash(keyFn(args));
-      const cachedResult = await cacheManagerInstance.get(key);
-      console.log("key", key, cachedResult);
+      const key = stableValueHash(keyFn(name, args));
+      const cachedResult = await cacheManagerInstance.get(key); //   console.log("key", key, cachedResult);
 
       if (cachedResult) {
         return cachedResult;
@@ -36,8 +43,11 @@ const Cacheble = (keyFn, cacheManagerInstance = _cache.default) => {
       let result = null;
 
       try {
-        result = await method.apply(this, args);
+        result = await method.apply(this, args); // console.log("Result", result);
+
         await cacheManagerInstance.set(key, result);
+      } catch (e) {
+        console.log(e);
       } finally {
         lock.release();
       }

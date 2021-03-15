@@ -35,7 +35,6 @@ let UserRepository = (_dec = (0, _cacheble.Cacheble)(), (_class = class UserRepo
     console.log(cacheKey, user);
 
     if (!user) {
-      console.log("Fetching user from slow database");
       user = await this.model.get(id);
       await _cache.default.set(cacheKey, user);
     }
@@ -44,8 +43,7 @@ let UserRepository = (_dec = (0, _cacheble.Cacheble)(), (_class = class UserRepo
   }
 
   async fetchUser(id) {
-    const user = await this.model.get(id);
-    return user;
+    return await this.model.get(id);
   }
 
 }, (_applyDecoratedDescriptor(_class.prototype, "fetchUser", [_dec], Object.getOwnPropertyDescriptor(_class.prototype, "fetchUser"), _class.prototype)), _class));

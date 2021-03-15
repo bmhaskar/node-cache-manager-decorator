@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.default = exports.redisCache = exports.memoryCache = void 0;
 
 var _cacheManager = _interopRequireDefault(require("cache-manager"));
 
@@ -23,12 +23,16 @@ const memoryCache = _cacheManager.default.caching({
 // https://github.com/dabroek/node-cache-manager-ioredis
 
 
+exports.memoryCache = memoryCache;
+
 const redisCache = _cacheManager.default.caching({
   store: _cacheManagerIoredis.default,
   db: 0,
   ttl: 600,
   redisInstance: _redis.redisInstance
 });
+
+exports.redisCache = redisCache;
 
 const cache = _cacheManager.default.multiCaching([memoryCache, redisCache]);
 
