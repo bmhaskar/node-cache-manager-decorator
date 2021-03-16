@@ -16,7 +16,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const memoryCache = _cacheManager.default.caching({
   store: "memory",
   max: 100,
-  ttl: 1000
+  ttl: 100
   /*seconds*/
 
 }); // Documentation can be found at

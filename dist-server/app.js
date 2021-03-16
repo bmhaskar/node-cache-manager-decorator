@@ -14,6 +14,10 @@ app.get("/:id", async function (req, res) {
   const user = await _user.default.fetchUser(req.params.id);
   res.json(user);
 });
+app.delete("/:id", async function (req, res) {
+  const user = await _user.default.deleteUser(req.params.id);
+  res.json(user);
+});
 app.get("/fetchUserWithoutDecorator/:id", async function (req, res) {
   const user = await _user.default.fetchUserWithoutDecorator(req.params.id);
   res.json(user);

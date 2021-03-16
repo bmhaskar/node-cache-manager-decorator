@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.stableValueHash = stableValueHash;
 exports.isPlainObject = isPlainObject;
-exports.Cacheble = exports.defaultKeyFn = void 0;
+exports.InvalidateCache = exports.Cacheable = exports.defaultKeyFn = void 0;
 
 var _cache = _interopRequireDefault(require("../utils/cache"));
 
@@ -27,39 +27,57 @@ const defaultKeyFn = (name, args) => {
 
 exports.defaultKeyFn = defaultKeyFn;
 
-const Cacheble = (config, keyFn = defaultKeyFn, cacheManagerInstance = _cache.default) => {
-  return (target, name, descriptor) => {
-    const method = descriptor.value;
+const Cacheable = (config, keyFn = defaultKeyFn, cacheManagerInstance = _cache.default) => (target, name, descriptor) => {
+  const method = descriptor.value;
 
-    descriptor.value = async function (...args) {
-      const key = stableValueHash(keyFn(name, args));
-      const cachedResult = await cacheManagerInstance.get(key); //   console.log("key", key, cachedResult);
+  descriptor.value = async function (...args) {
+    const key = stableValueHash(keyFn(name, args));
+    const cachedResult = await cacheManagerInstance.get(key);
 
-      if (cachedResult) {
-        return cachedResult;
-      }
+    if (cachedResult) {
+      return cachedResult;
+    }
 
-      await lock.acquire();
-      let result = null;
+    await lock.acquire();
+    let result = null;
 
-      try {
-        result = await method.apply(this, args); // console.log("Result", result);
+    try {
+      result = await method.apply(this, args); // console.log("Result", result);
 
-        await cacheManagerInstance.set(key, result);
-      } catch (e) {
-        console.log(e);
-      } finally {
-        lock.release();
-      }
+      await cacheManagerInstance.set(key, result, config);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      lock.release();
+    }
 
-      return result;
-    };
-
-    return descriptor;
+    return result;
   };
+
+  return descriptor;
 };
 
-exports.Cacheble = Cacheble;
+exports.Cacheable = Cacheable;
+
+const InvalidateCache = (keyFn = defaultKeyFn, cacheManagerInstance = _cache.default) => (target, name, descriptor) => {
+  const method = descriptor.value;
+
+  descriptor.value = async function (...args) {
+    const key = stableValueHash(keyFn(name, args));
+
+    try {
+      await method.apply(this, args);
+      await cacheManagerInstance.del(key);
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  };
+
+  return descriptor;
+};
+
+exports.InvalidateCache = InvalidateCache;
 
 function stableValueHash(value) {
   return JSON.stringify(value, (_, val) => isPlainObject(val) ? Object.keys(val).sort().reduce((result, key) => {

@@ -1,4 +1,4 @@
-import { Cacheble } from "../decorators/cacheble";
+import { Cacheable, InvalidateCache } from "../decorators/cacheble";
 import UserModel from "../models/User";
 import cache from "../utils/cache";
 
@@ -23,9 +23,14 @@ class UserRepository {
     }
     return user;
   }
-  @Cacheble()
+  @Cacheable()
   async fetchUser(id) {
     return await this.model.get(id);
+  }
+
+  @InvalidateCache()
+  async deleteUser(id) {
+    return await this.model.delete(id);
   }
 }
 

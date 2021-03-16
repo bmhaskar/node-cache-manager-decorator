@@ -12,8 +12,8 @@
     "build": "npm-run-all clean transpile",
     "dev": "cross-env NODE_ENV=development npm-run-all build server",
     "prod": "cross-env NODE_ENV=production npm-run-all build server",
-    "test": "jest --detectOpenHandles --forceExit",
-    "watch:dev": "nodemon"
+    "test": "jest  ",
+    "watch:dev": "nodemon"    
   },
   "devDependencies": {
     "@babel/cli": "^7.13.10",
@@ -26,7 +26,8 @@
     "rimraf": "^3.0.2",
     "yarn-run-all": "^3.1.1"
   },
-  "babel": {
+  "babel": {  
+    "ignore": ["*.spec.js"],
     "plugins": [
       [
         "@babel/plugin-proposal-decorators",

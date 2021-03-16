@@ -4,7 +4,7 @@ import { redisInstance } from "../adapters/redis";
 export const memoryCache = cacheManager.caching({
   store: "memory",
   max: 100,
-  ttl: 1000 /*seconds*/,
+  ttl: 100 /*seconds*/,
 });
 
 // Documentation can be found at

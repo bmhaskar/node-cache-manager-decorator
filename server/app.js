@@ -12,6 +12,11 @@ app.get("/:id", async function (req, res) {
   res.json(user);
 });
 
+app.delete("/:id", async function (req, res) {
+  const user = await userRepo.deleteUser(req.params.id);
+  res.json(user);
+});
+
 app.get("/fetchUserWithoutDecorator/:id", async function (req, res) {
   const user = await userRepo.fetchUserWithoutDecorator(req.params.id);
   res.json(user);

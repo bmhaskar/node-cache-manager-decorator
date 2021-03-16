@@ -9,36 +9,52 @@ export const defaultKeyFn = (name, args) => {
   }
   return defaultKey;
 };
-export const Cacheble = (
+export const Cacheable = (
   config,
   keyFn = defaultKeyFn,
   cacheManagerInstance = cache
-) => {
-  return (target, name, descriptor) => {
-    const method = descriptor.value;
-    descriptor.value = async function (...args) {
-      const key = stableValueHash(keyFn(name, args));
-      const cachedResult = await cacheManagerInstance.get(key);
-      //   console.log("key", key, cachedResult);
-      if (cachedResult) {
-        return cachedResult;
-      }
+) => (target, name, descriptor) => {
+  const method = descriptor.value;
+  descriptor.value = async function (...args) {
+    const key = stableValueHash(keyFn(name, args));
+    const cachedResult = await cacheManagerInstance.get(key);
 
-      await lock.acquire();
-      let result = null;
-      try {
-        result = await method.apply(this, args);
-        // console.log("Result", result);
-        await cacheManagerInstance.set(key, result);
-      } catch (e) {
-        console.log(e);
-      } finally {
-        lock.release();
-      }
-      return result;
-    };
-    return descriptor;
+    if (cachedResult) {
+      return cachedResult;
+    }
+
+    await lock.acquire();
+    let result = null;
+    try {
+      result = await method.apply(this, args);
+      // console.log("Result", result);
+      await cacheManagerInstance.set(key, result, config);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      lock.release();
+    }
+    return result;
   };
+  return descriptor;
+};
+
+export const InvalidateCache = (
+  keyFn = defaultKeyFn,
+  cacheManagerInstance = cache
+) => (target, name, descriptor) => {
+  const method = descriptor.value;
+  descriptor.value = async function (...args) {
+    const key = stableValueHash(keyFn(name, args));
+    try {
+      await method.apply(this, args);
+      await cacheManagerInstance.del(key);
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  };
+  return descriptor;
 };
 
 export function stableValueHash(value) {
