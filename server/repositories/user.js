@@ -28,7 +28,7 @@ class UserRepository {
     return await this.model.get(id);
   }
 
-  @InvalidateCache()
+  @InvalidateCache((name, args) => ["fetchUser", args[1]])
   async deleteUser(id) {
     return await this.model.delete(id);
   }
