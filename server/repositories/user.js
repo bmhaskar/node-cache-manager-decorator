@@ -1,4 +1,5 @@
-import { Cacheable, InvalidateCache } from "../decorators/cacheble";
+import { Cacheable } from "../decorators/cacheble";
+import { InvalidateCache } from "../decorators/invalidateCache";
 import UserModel from "../models/User";
 import cache from "../utils/cache";
 
