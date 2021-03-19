@@ -2,12 +2,12 @@ import { EventEmitter } from "events";
 
 class Lock {
   constructor() {
-    this._locked = new WeakMap();
-    this._ee = new EventEmitter();
+    this.locker = new WeakMap();
+    this.signal = new EventEmitter();
   }
 
   isLocked(key) {
-    return this._locked.has({ key }) ? this._locked.get({ key }) : false;
+    return this.locker.has({ key }) ? this.locker.get({ key }) : false;
   }
 
   acquire(key) {
@@ -16,25 +16,25 @@ class Lock {
       if (!this.isLocked(key)) {
         // Safe because JS doesn't interrupt you on synchronous operations,
         // so no need for compare-and-swap or anything like that.
-        this._locked.set({ key }, true);
+        this.locker.set({ key }, true);
         return resolve();
       }
       // Otherwise, wait until somebody releases the lock and try again
-      const tryAcquire = (value) => {
+      const tryAgain = (value) => {
         if (!this.isLocked(key)) {
-          this._locked.set({ key }, true);
-          this._ee.removeListener(key, tryAcquire);
+          this.locker.set({ key }, true);
+          this.signal.removeListener(key, tryAgain);
           return resolve(value);
         }
       };
-      this._ee.on(key, tryAcquire);
+      this.signal.on(key, tryAgain);
     });
   }
 
   release(key, value) {
     // Release the lock immediately
-    this._locked.set({ key }, false);
-    setImmediate(() => this._ee.emit(key, value));
+    this.locker.set({ key }, false);
+    setImmediate(() => this.signal.emit(key, value));
   }
 }
 
